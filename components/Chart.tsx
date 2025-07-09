@@ -7,8 +7,10 @@ import { useState, useRef, useEffect } from "react";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
+import Image from "next/image";
 
 const inter = Inter({
+  subsets: ["latin"],
   weight: "500"
 })
 
@@ -270,7 +272,7 @@ export function Chart() {
                     >
                       {message.image && (
                         <div className="mb-2">
-                          <img 
+                          <Image 
                             src={message.image} 
                             alt="Shared image" 
                             className="max-w-full max-h-32 rounded-lg border"
@@ -307,7 +309,7 @@ export function Chart() {
             <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-3 py-2 shadow-sm">
               {uploadedImage && (
                 <div className="relative">
-                  <img 
+                  <Image 
                     src={uploadedImage} 
                     alt="Uploaded preview" 
                     className="w-8 h-8 rounded-full object-cover border"
