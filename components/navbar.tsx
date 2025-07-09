@@ -3,8 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { BotIcon, Stethoscope, TrendingUp, FileText } from 'lucide-react';
-import { Button } from './ui/button';
+import { Stethoscope, TrendingUp, FileText } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 export default function Navbar() {
