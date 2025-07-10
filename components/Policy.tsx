@@ -21,16 +21,49 @@ interface Message {
   image?: string; // Base64 image data
 }
 
-const hardcodedResponses = [
-  "That's an interesting question! Let me think about that...",
-  "I understand what you're asking. Here's my perspective on this topic.",
-  "Great question! Based on my knowledge, I can tell you that...",
-  "I'd be happy to help you with that. From what I understand...",
-  "That's a thoughtful inquiry. Let me provide you with some insights...",
-  "I see what you're getting at. Here's what I can share about this...",
-  "Thanks for asking! This is actually a fascinating topic to explore...",
-  "I'm glad you brought this up. Let me explain this in detail...",
-];
+const dripIrrigationResponse = `**হ্যাঁ, ড্রিপ সেচের জন্য সরকারি সহায়তা পাওয়া যায়।**
+
+**পরিকল্পনার নাম:** প্রধানমন্ত্রী কৃষি সিচাই যোজনা (PMKSY) – "Per Drop More Crop" উপ-উদ্যোগ
+
+**মূল সুবিধা:**
+• ড্রিপ ও স্প্রিংকলার সিস্টেমে ৪০%–৫৫% পর্যন্ত ভর্তুকি (ছোট ও প্রান্তিক কৃষকদের জন্য উচ্চ হারে ভর্তুকি)
+• জমির পরিমাণ, জলের উৎস ও ফসল অনুযায়ী সহায়তা পরিবর্তিত হয়
+
+**যোগ্যতা:**
+• কৃষিজমির বৈধ মালিক
+• জল উৎস (নলকূপ, পুকুর, গভীর নলকূপ ইত্যাদি)
+• রাজ্য সরকারে রেজিস্টার্ড কৃষক
+
+**আবেদনের লিঙ্ক:**
+➡ https://pmksy.gov.in
+➡ এছাড়াও, রাজ্য কৃষি দপ্তরের পোর্টালে আবেদন করা যায়
+
+**সহায়তার জন্য:**
+নিকটস্থ কৃষি সহকারী অফিসে যোগাযোগ করুন বা কৃষক কল সেন্টারে (1800-180-1551) ফোন করুন
+
+---
+
+**English Translation:**
+
+**Yes, there is a government scheme for drip irrigation.**
+
+**Scheme Name:** Pradhan Mantri Krishi Sinchayee Yojana (PMKSY) – "Per Drop More Crop" sub-component
+
+**Main Benefits:**
+• 40%–55% subsidy on drip and sprinkler systems (higher for small and marginal farmers)
+• Assistance varies based on land size, water source, and crop
+
+**Eligibility:**
+• Legal ownership of agricultural land
+• Access to a water source (tube well, pond, deep bore well, etc.)
+• Registered with the state agriculture department
+
+**Application Links:**
+➡ https://pmksy.gov.in
+➡ Or through your State Agriculture Department portal
+
+**For Help:**
+Contact your local agriculture extension office or call the Kisan Call Center at 1800-180-1551`;
 
 const policyCards = [
   {
@@ -129,10 +162,6 @@ export function Policy() {
     scrollToBottom();
   }, [messages]);
 
-  const getRandomResponse = () => {
-    return hardcodedResponses[Math.floor(Math.random() * hardcodedResponses.length)];
-  };
-
   const handleSend = async () => {
     if (!inputValue.trim() && !uploadedImage) return;
 
@@ -152,7 +181,7 @@ export function Policy() {
     setTimeout(() => {
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: getRandomResponse(),
+        text: dripIrrigationResponse,
         isUser: false,
         timestamp: new Date(),
       };
@@ -186,6 +215,17 @@ export function Policy() {
     }
   };
 
+  const formatMessage = (text: string) => {
+    // Convert markdown-style formatting to HTML
+    const formatted = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/➡ (https?:\/\/[^\s]+)/g, '➡ <a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">$1</a>')
+      .replace(/\n/g, '<br />')
+      .replace(/• /g, '<br />• ');
+
+    return formatted;
+  };
+
   return (
     <div className="p-3">
       <div className="grid grid-cols-3 gap-2">
@@ -207,7 +247,7 @@ export function Policy() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Link href={"#"} className="text-blue-500 underline">{policy.linkText}</Link>
+                  <Link href={"https://pmkisan.gov.in/RegistrationFormupdated.aspx"} target="_blank" className="text-blue-500 underline">{policy.linkText}</Link>
                 </CardFooter>
               </Card>
             ))}
@@ -250,12 +290,19 @@ export function Policy() {
                           <Image 
                             src={message.image} 
                             alt="Shared image" 
+                            width={128}
+                            height={128}
                             className="max-w-full max-h-32 rounded-lg border"
                           />
                         </div>
                       )}
-                      {message.text && <p className="text-sm">{message.text}</p>}
-                      <p className={`text-xs mt-1 ${
+                      {message.text && (
+                        <div 
+                          className="text-sm whitespace-pre-wrap leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: formatMessage(message.text) }}
+                        />
+                      )}
+                      <p className={`text-xs mt-2 ${
                         message.isUser ? 'text-blue-100' : 'text-gray-500'
                       }`}>
                         {message.timestamp.toLocaleTimeString()}
@@ -287,6 +334,8 @@ export function Policy() {
                   <Image 
                     src={uploadedImage} 
                     alt="Uploaded preview" 
+                    width={32}
+                    height={32}
                     className="w-8 h-8 rounded-full object-cover border"
                   />
                   <button 

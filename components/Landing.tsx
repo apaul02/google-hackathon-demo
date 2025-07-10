@@ -19,7 +19,7 @@ export function Landing() {
           <h1 className="text-xl font-semibold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">Kisan Sathi</h1>
         </div>
         <div>
-          <Button>Get Started</Button>
+          <Button>Sign in</Button>
         </div>
       </header>
       <div>

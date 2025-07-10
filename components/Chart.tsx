@@ -22,17 +22,40 @@ interface Message {
   image?: string; // Base64 image data
 }
 
-const hardcodedResponses = [
-  "That's an interesting question! Let me think about that...",
-  "I understand what you're asking. Here's my perspective on this topic.",
-  "Great question! Based on my knowledge, I can tell you that...",
-  "I'd be happy to help you with that. From what I understand...",
-  "That's a thoughtful inquiry. Let me provide you with some insights...",
-  "I see what you're getting at. Here's what I can share about this...",
-  "Thanks for asking! This is actually a fascinating topic to explore...",
-  "I'm glad you brought this up. Let me explain this in detail...",
-];
+const hardcodedResponse = `
+**ಇಂದು ಟೊಮೆಟೊ ಮಾರುಕಟ್ಟೆ ಸ್ಥಿತಿ:**
+**ಮೂಲಸ್ಥಳ:** ಕೋಲಾರ APMC
+ನಿಮ್ನ–ಗರಿಷ್ಠ ಬೆಲೆ: ₹650 – ₹950 ಕ್ವಿಂಟಲ್‌ಗೆ
+**ಮಧ್ಯಮ ಬೆಲೆ:** ₹800
+**ಹಿಂದಿನ ವಾರ ಹೋಲಿಕೆ:** ಬೆಲೆಯಲ್ಲಿ 5% ಇಳಿಕೆ
+**🌦 ಕಾರಣ:** ಕಡಿಮೆ ಗುಣಮಟ್ಟದ ಸರಬರಾಜು ಮತ್ತು ಮಳೆ ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಬೇಡಿಕೆ ಇಳಿಕೆ
 
+**ನಿಮಗೆ ಸಲಹೆ:**
+- ಇಂದು ಮಾರಾಟ ಮಾಡುವುದನ್ನು ತಡೆಹಿಡಿಯಿರಿ (ಯಾವಾಗ ಸಾಧ್ಯವೋ).
+- 2–3 ದಿನಗಳಲ್ಲಿ ಹವಾಮಾನ ಸುಧಾರಣೆಯೊಂದಿಗೆ ಬೆಲೆ ಹೆಚ್ಚಾಗುವ ಸಾಧ್ಯತೆ ಇದೆ.
+
+**ಉತ್ತಮ ಬೆಲೆಗಾಗಿ:**
+- ಮಾರುಕಟ್ಟೆ ನೇರ ಮಾರಾಟಕ್ಕೆ ಪ್ರಯತ್ನಿಸಿ
+- ಮಧ್ಯವರ್ತಿಗಳ ಜಾಲ ತಪ್ಪಿಸಿ
+
+**ನಾನೇ ನಿಮ್ಮ ಮುಂದಿನ ಮಾರಾಟ ವೇಳೆಗೆ ಹತ್ತುಕೊಳ್ಳಬಹುದಾ?**
+
+**Today's Tomato Market Status:**
+**Source:** Kolar APMC
+**Min–Max Price:** ₹650 – ₹950 per quintal
+**Average Price:** ₹800
+**Compared to Last Week:** 5% drop in price
+**Reason:** Low-quality supply and reduced demand due to rainfall
+
+**Advice for You:**
+- Hold off on selling today if possible.
+- Prices are likely to rise in the next 2–3 days as weather conditions improve.
+
+**To Get Better Prices:**
+- Try direct market sales
+- Avoid middlemen wherever possible
+
+**Shall I remind you before the next optimal selling time?**`;
 
 const cropYieldData = [
   { crop: "Rice", yield: 4200 },
@@ -90,10 +113,6 @@ export function Chart() {
     scrollToBottom();
   }, [messages]);
 
-  const getRandomResponse = () => {
-    return hardcodedResponses[Math.floor(Math.random() * hardcodedResponses.length)];
-  };
-
   const handleSend = async () => {
     if (!inputValue.trim() && !uploadedImage) return;
 
@@ -113,7 +132,7 @@ export function Chart() {
     setTimeout(() => {
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: getRandomResponse(),
+        text: hardcodedResponse,
         isUser: false,
         timestamp: new Date(),
       };
@@ -147,6 +166,68 @@ export function Chart() {
     }
   };
 
+  const renderMessageText = (text: string) => {
+    return text.split('\n').map((line, index) => {
+      if (!line.trim()) return <div key={index} className="mb-1"></div>;
+      
+      // Check if line starts with ** (bold headers)
+      if (line.startsWith('**') && line.includes('**')) {
+        const parts = line.split('**');
+        return (
+          <div key={index} className="font-bold mb-2 text-gray-900">
+            {parts.map((part, i) => 
+              i % 2 === 1 ? <span key={i} className="font-bold">{part}</span> : part
+            )}
+          </div>
+        );
+      }
+      
+      // Check if line starts with - (bullet point)
+      if (line.trim().startsWith('- ')) {
+        const content = line.trim().substring(2);
+        // Check if bullet point has bold text
+        if (content.includes('**')) {
+          const parts = content.split('**');
+          return (
+            <div key={index} className="ml-4 mb-1 flex">
+              <span className="mr-2">•</span>
+              <span>
+                {parts.map((part, i) => 
+                  i % 2 === 1 ? <span key={i} className="font-semibold">{part}</span> : part
+                )}
+              </span>
+            </div>
+          );
+        }
+        return (
+          <div key={index} className="ml-4 mb-1 flex">
+            <span className="mr-2">•</span>
+            <span>{content}</span>
+          </div>
+        );
+      }
+      
+      // Regular line with potential bold formatting
+      if (line.includes('**')) {
+        const parts = line.split('**');
+        return (
+          <div key={index} className="mb-1">
+            {parts.map((part, i) => 
+              i % 2 === 1 ? <span key={i} className="font-semibold">{part}</span> : part
+            )}
+          </div>
+        );
+      }
+      
+      // Regular line
+      return (
+        <div key={index} className="mb-1">
+          {line}
+        </div>
+      );
+    });
+  };
+
   return (
     <div className="p-3">
       <div className="grid grid-cols-3 gap-2">
@@ -154,7 +235,7 @@ export function Chart() {
         <div className="border-2 col-span-2 p-4 rounded-lg h-[calc(100vh-104px)] overflow-y-auto">
           <div className="space-y-4">
             {/* Top row - Two charts side by side */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Crop Yield Chart */}
               <div className="border rounded-lg p-4 bg-white">
                 <h3 className="text-lg font-semibold mb-3">Crop Yield Analysis</h3>
@@ -279,7 +360,11 @@ export function Chart() {
                           />
                         </div>
                       )}
-                      {message.text && <p className="text-sm">{message.text}</p>}
+                      {message.text && (
+                        <div className="text-sm whitespace-pre-wrap">
+                          {message.isUser ? message.text : renderMessageText(message.text)}
+                        </div>
+                      )}
                       <p className={`text-xs mt-1 ${
                         message.isUser ? 'text-blue-100' : 'text-gray-500'
                       }`}>

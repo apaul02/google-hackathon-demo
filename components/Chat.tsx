@@ -1,5 +1,5 @@
 "use client";
-import { Mic, Send, Upload } from "lucide-react";
+import { Leaf, Mic, Send, Upload } from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Inter } from "next/font/google";
@@ -19,16 +19,26 @@ interface Message {
   image?: string; // Base64 image data
 }
 
-const hardcodedResponses = [
-  "That's an interesting question! Let me think about that...",
-  "I understand what you're asking. Here's my perspective on this topic.",
-  "Great question! Based on my knowledge, I can tell you that...",
-  "I'd be happy to help you with that. From what I understand...",
-  "That's a thoughtful inquiry. Let me provide you with some insights...",
-  "I see what you're getting at. Here's what I can share about this...",
-  "Thanks for asking! This is actually a fascinating topic to explore...",
-  "I'm glad you brought this up. Let me explain this in detail...",
-];
+const hardcodedResponse = `**Diagnosis:** Early Blight (caused by Alternaria solani)
+**Crop:** Tomato
+**Symptoms Identified:**
+- Concentric brown lesions with yellow halos
+- Older leaves infected first, progressing upwards
+- Premature leaf drop reducing yield
+
+**Cause:** Fungus thrives in warm, humid conditions—especially after rainfall or overhead irrigation.
+
+**Recommended Actions:**
+- Remove affected leaves immediately to slow spread.
+- **Apply Fungicide:**
+  - Locally available: Mancozeb or Chlorothalonil-based spray
+  - Follow label instructions; reapply every 7–10 days during high humidity
+- **Improve Airflow:** Space plants adequately and avoid overhead watering.
+- **Crop Rotation:** Don't plant tomatoes or potatoes in the same spot for 2–3 seasons.
+
+**Cost Tip:** Generic Mancozeb is widely available in local agri-stores at low cost (~₹150 per 500g).
+
+**Prevention Tip:** Spray neem oil weekly as an organic preventive option.`;
 
 export function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -45,10 +55,6 @@ export function Chat() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  const getRandomResponse = () => {
-    return hardcodedResponses[Math.floor(Math.random() * hardcodedResponses.length)];
-  };
 
   const handleSend = async () => {
     if (!inputValue.trim() && !uploadedImage) return;
@@ -69,7 +75,7 @@ export function Chat() {
     setTimeout(() => {
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: getRandomResponse(),
+        text: hardcodedResponse,
         isUser: false,
         timestamp: new Date(),
       };
@@ -103,19 +109,82 @@ export function Chat() {
     }
   };
 
+  const renderMessageText = (text: string) => {
+    return text.split('\n').map((line, index) => {
+      if (!line.trim()) return <div key={index} className="mb-1"></div>;
+      
+      // Check if line starts with ** (bold headers)
+      if (line.startsWith('**') && line.includes('**')) {
+        const parts = line.split('**');
+        return (
+          <div key={index} className="font-bold mb-2 text-gray-900">
+            {parts.map((part, i) => 
+              i % 2 === 1 ? <span key={i} className="font-bold">{part}</span> : part
+            )}
+          </div>
+        );
+      }
+      
+      // Check if line starts with - (bullet point)
+      if (line.trim().startsWith('- ')) {
+        const content = line.trim().substring(2);
+        // Check if bullet point has bold text
+        if (content.includes('**')) {
+          const parts = content.split('**');
+          return (
+            <div key={index} className="ml-4 mb-1 flex">
+              <span className="mr-2">•</span>
+              <span>
+                {parts.map((part, i) => 
+                  i % 2 === 1 ? <span key={i} className="font-semibold">{part}</span> : part
+                )}
+              </span>
+            </div>
+          );
+        }
+        return (
+          <div key={index} className="ml-4 mb-1 flex">
+            <span className="mr-2">•</span>
+            <span>{content}</span>
+          </div>
+        );
+      }
+      
+      // Regular line with potential bold formatting
+      if (line.includes('**')) {
+        const parts = line.split('**');
+        return (
+          <div key={index} className="mb-1">
+            {parts.map((part, i) => 
+              i % 2 === 1 ? <span key={i} className="font-semibold">{part}</span> : part
+            )}
+          </div>
+        );
+      }
+      
+      // Regular line
+      return (
+        <div key={index} className="mb-1">
+          {line}
+        </div>
+      );
+    });
+  };
+
   // New chat layout (original design)
   if (messages.length === 0 && !isTyping) {
     return (
       <div>
         <div className="flex flex-col items-center justify-center h-screen">
-          <div className="p-4 mb-6 text-center">
-            <div className={`${inter.className} font-bold text-5xl`}>
-              AI Plant Disease Diagnosis
-            </div>
-            <div className="pt-4 text-gray-500 text-lg">
-              Upload a photo of an affected plant leaf to get an instant diagnosis and treatment advice.
-            </div>
-          </div>
+          <div className="flex flex-col items-center justify-center p-4 mb-6">
+  <Leaf color="#00ff11" className="h-12 w-12" />
+  <h1 className={`${inter.className} font-bold text-5xl mt-2`}>
+    AI Plant Disease Diagnosis
+  </h1>
+  <p className="pt-4 text-gray-500 text-lg text-center">
+    Upload a photo of an affected plant leaf to get an instant diagnosis and treatment advice.
+  </p>
+</div>
           <div className="flex justify-center">
             <div className="w-[1000px] py-2 px-2 bg-white rounded-lg shadow-md border-2">
               <div className="flex flex-col h-full">
@@ -210,7 +279,11 @@ export function Chat() {
                     />
                   </div>
                 )}
-                {message.text && <p className="text-sm">{message.text}</p>}
+                {message.text && (
+                  <div className="text-sm whitespace-pre-wrap">
+                    {message.isUser ? message.text : renderMessageText(message.text)}
+                  </div>
+                )}
                 <p className={`text-xs mt-1 ${
                   message.isUser ? 'text-blue-100' : 'text-gray-500'
                 }`}>
